@@ -17,9 +17,9 @@ export const serverEnv = {
   supabaseUrl: () => required("NEXT_PUBLIC_SUPABASE_URL"),
   supabasePublishableKey: () => required("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"),
   supabaseSecretKey: () => required("SUPABASE_SECRET_KEY"),
-  anthropicApiKey: () => required("ANTHROPIC_API_KEY"),
-  aiModel: () => process.env.AI_MODEL || "claude-opus-5-5",
-  aiProvider: () => process.env.AI_PROVIDER || "anthropic",
+  geminiApiKey: () => required("GEMINI_API_KEY"),
+  aiModel: () => process.env.AI_MODEL || "gemini-3.5-flash-lite",
+  aiProvider: () => process.env.AI_PROVIDER || "gemini",
   embeddingsProvider: () => process.env.EMBEDDINGS_PROVIDER || "none",
   voyageApiKey: () => required("VOYAGE_API_KEY"),
 };

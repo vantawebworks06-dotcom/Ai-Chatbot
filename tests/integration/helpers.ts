@@ -4,10 +4,12 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 // They create temporary users/businesses and delete them afterwards.
 // Enable with RUN_INTEGRATION=1 (see README "Testing").
 
-try {
-  process.loadEnvFile(".env.local");
-} catch {
-  /* env may come from the shell instead */
+for (const file of [".env.local", ".env"]) {
+  try {
+    process.loadEnvFile(file); // does not override values already set
+  } catch {
+    /* file missing: env may come from the shell instead */
+  }
 }
 
 export const enabled =

@@ -3,10 +3,12 @@
 // The user must have signed up first. Reads keys from .env.local.
 import { createClient } from "@supabase/supabase-js";
 
-try {
-  process.loadEnvFile(".env.local");
-} catch {
-  /* use shell env */
+for (const file of [".env.local", ".env"]) {
+  try {
+    process.loadEnvFile(file);
+  } catch {
+    /* file missing: use shell env */
+  }
 }
 
 const [email, displayName] = process.argv.slice(2);
