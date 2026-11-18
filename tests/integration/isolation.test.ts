@@ -149,12 +149,15 @@ describe.skipIf(!enabled)("tenant isolation & authorization (live database)", ()
   });
 
   it("owners can't change conversations directly", async () => {
-    const { data } = await ownerB.client
+    const { data, error } = await ownerB.client
       .from("conversations")
       .update({ mode: "human" })
       .eq("id", convB)
       .select();
-    expect(data).toEqual([]);
+    // Either refused outright (no UPDATE privilege) or no rows matched.
+    expect(error !== null || (data ?? []).length === 0).toBe(true);
+    const { data: row } = await admin().from("conversations").select("mode").eq("id", convB).single();
+    expect(row!.mode).toBe("ai");
   });
 
   it("the platform agent sees conversations across all businesses", async () => {
