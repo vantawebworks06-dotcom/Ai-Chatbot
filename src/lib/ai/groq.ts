@@ -8,6 +8,16 @@ import {
   type SupportAIResult,
 } from "./types";
 
+const MAX_ATTEMPTS = 3;
+
+/** Groq's "the generation didn't match the JSON schema" error (HTTP 400). */
+export function isJsonValidationError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const status = (error as { status?: unknown }).status;
+  const message = String((error as { message?: unknown }).message ?? "");
+  return status === 400 && message.includes("json_validate_failed");
+}
+
 /**
  * Groq via the official groq-sdk (OpenAI-compatible chat completions).
  * Uses strict JSON Schema structured output, which Groq supports for
@@ -26,6 +36,19 @@ export class GroqSupportProvider implements SupportAIProvider {
   }
 
   async generateReply(request: SupportAIRequest): Promise<SupportAIResult> {
+    // Groq occasionally rejects a strict-JSON generation with
+    // 400 json_validate_failed (often an empty generation). That is transient,
+    // so retry it a couple of times before letting the engine hand off.
+    for (let attempt = 1; ; attempt++) {
+      try {
+        return await this.generateOnce(request);
+      } catch (error) {
+        if (attempt >= MAX_ATTEMPTS || !isJsonValidationError(error)) throw error;
+      }
+    }
+  }
+
+  private async generateOnce(request: SupportAIRequest): Promise<SupportAIResult> {
     const completion = await this.client.chat.completions.create({
       model: this.model,
       messages: [

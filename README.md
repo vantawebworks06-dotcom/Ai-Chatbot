@@ -158,7 +158,7 @@ $env:RUN_INTEGRATION = "1"; npm run test:integration
 That runs the tenant-isolation, authorization and agent-action tests. To also run the **end-to-end customer journey** against a running app with the real AI, start `npm run dev` in another window, then run:
 
 ```powershell
-$env:RUN_INTEGRATION = "1"; $env:BASE_URL = "http://localhost:3000"; npm run test:integration
+$env:RUN_INTEGRATION = "1"; $env:VELORA_TEST_URL = "http://localhost:3000"; npm run test:integration
 ```
 
 ---

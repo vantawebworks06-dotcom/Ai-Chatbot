@@ -105,6 +105,35 @@ describe("GroqSupportProvider", () => {
     await expect(provider().generateReply(request)).rejects.toThrow();
   });
 
+  it("retries Groq's transient json_validate_failed error, then succeeds", async () => {
+    let n = 0;
+    respond = async () => {
+      n++;
+      if (n < 3) {
+        throw Object.assign(new Error('400 {"error":{"code":"json_validate_failed"}}'), { status: 400 });
+      }
+      return completion(JSON.stringify(good));
+    };
+    expect(await provider().generateReply(request)).toEqual(good);
+    expect(calls).toHaveLength(3);
+  });
+
+  it("gives up after 3 json_validate_failed attempts (engine then hands off)", async () => {
+    respond = async () => {
+      throw Object.assign(new Error('400 {"error":{"code":"json_validate_failed"}}'), { status: 400 });
+    };
+    await expect(provider().generateReply(request)).rejects.toThrow(/json_validate_failed/);
+    expect(calls).toHaveLength(3);
+  });
+
+  it("does not retry other errors", async () => {
+    respond = async () => {
+      throw Object.assign(new Error("401 Invalid API Key"), { status: 401 });
+    };
+    await expect(provider().generateReply(request)).rejects.toThrow();
+    expect(calls).toHaveLength(1);
+  });
+
   it("propagates API errors (engine then hands off)", async () => {
     respond = async () => {
       throw new Error("401 Invalid API Key");

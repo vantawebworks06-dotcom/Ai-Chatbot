@@ -3,9 +3,9 @@ import { admin, cleanup, createBusinessFor, createUser, enabled, makeAgent, type
 
 // End-to-end customer journey through the real HTTP API of a running app
 // (npm run dev or a deployed URL), with the real AI provider.
-// Requires RUN_INTEGRATION=1 and BASE_URL, e.g. BASE_URL=http://localhost:3000
+// Requires RUN_INTEGRATION=1 and VELORA_TEST_URL (not BASE_URL, which Vite reserves), e.g. VELORA_TEST_URL=http://localhost:3000
 
-const BASE_URL = process.env.BASE_URL?.replace(/\/$/, "");
+const BASE_URL = process.env.VELORA_TEST_URL?.replace(/\/$/, "");
 
 describe.skipIf(!enabled || !BASE_URL)("customer journey via the widget API (live app + AI)", () => {
   let owner: TestUser;
@@ -158,7 +158,12 @@ describe.skipIf(!enabled || !BASE_URL)("customer journey via the widget API (liv
       conversation_id: conversationId,
       content: "Is shipping free if I spend 50 EUR?",
     });
-    expect(json.conversation.mode).toBe("ai");
+    const { data: conv } = await admin()
+      .from("conversations")
+      .select("handoff_reason")
+      .eq("id", conversationId)
+      .single();
+    expect(json.conversation.mode, `handed off: ${conv?.handoff_reason}; ${JSON.stringify(json.messages)}`).toBe("ai");
     expect(json.messages.some((m: { sender: string }) => m.sender === "ai")).toBe(true);
   });
 
