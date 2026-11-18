@@ -1,0 +1,24 @@
+import type { EmailOtpType } from "@supabase/supabase-js";
+import { NextResponse, type NextRequest } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+
+// Handles the link in Supabase confirmation / magic-link emails.
+export async function GET(request: NextRequest) {
+  const url = request.nextUrl;
+  const code = url.searchParams.get("code");
+  const tokenHash = url.searchParams.get("token_hash");
+  const type = url.searchParams.get("type") as EmailOtpType | null;
+  const next = url.searchParams.get("next");
+  const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "/auth/continue";
+
+  const supabase = await createClient();
+  let ok = false;
+  if (code) {
+    ok = !(await supabase.auth.exchangeCodeForSession(code)).error;
+  } else if (tokenHash && type) {
+    ok = !(await supabase.auth.verifyOtp({ type, token_hash: tokenHash })).error;
+  }
+
+  const target = new URL(ok ? safeNext : "/login?error=confirm", url.origin);
+  return NextResponse.redirect(target);
+}

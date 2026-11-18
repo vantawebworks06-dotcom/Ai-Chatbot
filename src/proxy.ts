@@ -35,6 +35,7 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    // Skip static files and the public widget API (it uses visitor tokens, not cookies).
+    "/((?!_next/static|_next/image|api/widget|widget\\.js|test-site\\.html|icon\\.svg|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };
