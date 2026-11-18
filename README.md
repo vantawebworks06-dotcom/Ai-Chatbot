@@ -16,7 +16,7 @@ Velora is an AI customer-support platform. Businesses install a chat widget on t
                                      │   1. deterministic handoff rules   │ conversations, messages
                                      │   2. retrieve this business's      │ pgvector + full-text search
                                      │      knowledge only                │
-                                     │   3. Gemini → JSON {reply,         │
+                                     │   3. Groq → JSON {reply,           │
                                      │      needs_human, confidence}      │
                                      │   4. answer or hand off            │
  Business dashboard ── session ──▶  /dashboard (server components) ──▶  RLS: members only
@@ -28,7 +28,7 @@ Velora is an AI customer-support platform. Businesses install a chat widget on t
 | App | Next.js 16 (App Router) + TypeScript + Tailwind | One codebase for API, dashboards and marketing site; deploys to Vercel |
 | Database, auth, storage | Supabase (Postgres, Auth, Storage) | Row-level security enforces tenant isolation inside the database |
 | Real-time | Supabase Realtime (agent inbox) and polling (widget) | See [Limitations](#limitations) |
-| AI | Google Gemini (`gemini-3.5-flash-lite` by default) via the official `@google/genai` SDK, behind a provider interface | Structured JSON output, so the code (not the model's prose) decides handoff. Swap providers in `src/lib/ai/` |
+| AI | Groq (`openai/gpt-oss-120b` by default) via the official `groq-sdk`, behind a provider interface | Structured JSON output, so the code (not the model's prose) decides handoff. Swap providers in `src/lib/ai/` |
 | Retrieval | Postgres full-text search, plus optional vector search (pgvector + Voyage) | Works with no extra API key; add embeddings for large knowledge bases |
 
 ### Handoff: when a person takes over
@@ -49,7 +49,7 @@ When an agent claims or replies, the AI stops replying in that conversation. The
 - The widget never touches the database directly. It sends a public client ID and a random per-visitor token, which is stored only as a hash. The server checks both, plus an optional domain allow-list.
 - Agent actions (claim, reply, return to AI, close) are database functions that refuse anyone who isn't a platform agent.
 - Knowledge retrieval always filters by business ID inside SQL, and can only be called by the server.
-- Secrets (`SUPABASE_SECRET_KEY`, `GEMINI_API_KEY`) are read only in server code that's marked `server-only`.
+- Secrets (`SUPABASE_SECRET_KEY`, `GROQ_API_KEY`) are read only in server code that's marked `server-only`.
 
 ---
 
@@ -68,7 +68,7 @@ src/
     agent/                Platform agent inbox (real-time)
     api/widget/           Public widget API: session, messages, handoff, typing
   lib/
-    ai/                   Provider interface + Gemini implementation + optional embeddings
+    ai/                   Provider interface + Groq implementation + optional embeddings
     support/              Handoff rules, prompt builder, support engine, Supabase store
     knowledge/            Chunking, PDF/text extraction, indexing
     widget/               Visitor tokens, CORS and origin checks
@@ -94,7 +94,7 @@ You need [Node.js 20+](https://nodejs.org) and Git. Run these commands in PowerS
 | Supabase project URL | Supabase → Project Settings → API Keys | `NEXT_PUBLIC_SUPABASE_URL` |
 | Publishable key | same page | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` |
 | **Secret key** (server only) | same page → "Secret keys" | `SUPABASE_SECRET_KEY` |
-| Gemini API key | aistudio.google.com → Get API key | `GEMINI_API_KEY` |
+| Groq API key | console.groq.com/keys → Create API Key | `GROQ_API_KEY` |
 | Voyage API key (optional) | voyageai.com | `VOYAGE_API_KEY` + `EMBEDDINGS_PROVIDER=voyage` |
 
 ```powershell
