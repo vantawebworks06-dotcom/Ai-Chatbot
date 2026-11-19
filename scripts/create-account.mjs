@@ -102,4 +102,4 @@ if (makeAgent) {
 }
 
 console.log("\nNext: sign in at http://localhost:3000/login");
-console.log("Create your business at http://localhost:3000/onboarding (the agent inbox links to it).");
+console.log("Create your business at http://localhost:3000/onboarding (or use "Add business" in the agent inbox).");

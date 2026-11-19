@@ -3,18 +3,22 @@
 import {
   BookOpen,
   Bot,
+  Check,
+  ChevronsUpDown,
   Code2,
   Headset,
   LayoutDashboard,
   LogOut,
   Menu,
   MessagesSquare,
+  Plus,
   Settings,
   X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
+import { switchBusiness } from "@/app/dashboard/actions";
 import { VeloraLogo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
 
@@ -27,19 +31,63 @@ const BUSINESS_NAV = [
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
+type BusinessRef = { id: string; name: string };
+
 export function AppShell({
-  businessName,
+  business,
+  businesses,
   email,
   isAgent,
   children,
 }: {
-  businessName: string;
+  business: BusinessRef;
+  businesses: BusinessRef[];
   email: string;
   isAgent: boolean;
   children: ReactNode;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+
+  const businessName = business.name;
+
+  const switcher = (
+    <details className="group relative mx-3 mb-3">
+      <summary className="flex h-11 cursor-pointer list-none items-center gap-2.5 rounded-lg border border-line px-2.5 hover:bg-subtle/70 [&::-webkit-details-marker]:hidden">
+        <span className="grid h-6 w-6 flex-none place-items-center rounded-md bg-brand-soft text-[12px] font-semibold text-brand">
+          {businessName.charAt(0).toUpperCase()}
+        </span>
+        <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium text-ink">{businessName}</span>
+        <ChevronsUpDown className="h-4 w-4 flex-none text-faint" />
+      </summary>
+      <div className="absolute inset-x-0 top-12 z-50 rounded-lg border border-line bg-surface p-1 shadow-[var(--shadow-pop)]">
+        <p className="px-2.5 pt-1.5 pb-1 text-[11px] font-medium tracking-wide text-muted uppercase">Your businesses</p>
+        <div className="max-h-64 overflow-y-auto">
+          {businesses.map((b) => (
+            <form key={b.id} action={switchBusiness}>
+              <input type="hidden" name="business_id" value={b.id} />
+              <button
+                type="submit"
+                className="flex h-9 w-full items-center gap-2.5 rounded-md px-2.5 text-left text-[13.5px] text-ink-2 hover:bg-subtle hover:text-ink"
+              >
+                <span className="min-w-0 flex-1 truncate">{b.name}</span>
+                {b.id === business.id ? <Check className="h-4 w-4 flex-none text-brand" /> : null}
+              </button>
+            </form>
+          ))}
+        </div>
+        <div className="my-1 h-px bg-line" />
+        <Link
+          href="/onboarding"
+          onClick={() => setOpen(false)}
+          className="flex h-9 items-center gap-2.5 rounded-md px-2.5 text-[13.5px] font-medium text-ink-2 hover:bg-subtle hover:text-ink"
+        >
+          <Plus className="h-4 w-4 text-faint" />
+          Add business
+        </Link>
+      </div>
+    </details>
+  );
 
   const nav = (
     <nav className="flex flex-1 flex-col gap-0.5 px-3">
@@ -111,6 +159,7 @@ export function AppShell({
           </Link>
         </div>
         <div className="pt-2" />
+        {switcher}
         {nav}
         {footer}
       </aside>
@@ -143,6 +192,7 @@ export function AppShell({
                 <X className="h-5 w-5" />
               </button>
             </div>
+            {switcher}
             {nav}
             {footer}
           </aside>

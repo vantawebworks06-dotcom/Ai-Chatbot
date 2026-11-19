@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   LogOut,
   MessagesSquare,
+  Plus,
   Search,
   Send,
   UserRound,
@@ -277,17 +278,21 @@ export function AgentInbox({
               </button>
             );
           })}
+          <div className="mx-2.5 my-3 h-px bg-line" />
           {hasBusiness ? (
-            <>
-              <div className="mx-2.5 my-3 h-px bg-line" />
-              <Link
-                href="/dashboard"
-                className="flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-[13.5px] font-medium text-ink-2 hover:bg-subtle/70"
-              >
-                <LayoutDashboard className="h-4 w-4 text-faint" /> Business dashboard
-              </Link>
-            </>
+            <Link
+              href="/dashboard"
+              className="flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-[13.5px] font-medium text-ink-2 hover:bg-subtle/70"
+            >
+              <LayoutDashboard className="h-4 w-4 text-faint" /> Business dashboard
+            </Link>
           ) : null}
+          <Link
+            href="/onboarding"
+            className="flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-[13.5px] font-medium text-ink-2 hover:bg-subtle/70"
+          >
+            <Plus className="h-4 w-4 text-faint" /> Add business
+          </Link>
         </nav>
         <div className="border-t border-line p-3">
           <div className="flex items-center gap-2 px-2 py-1">

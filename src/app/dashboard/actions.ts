@@ -1,7 +1,9 @@
 "use server";
 
 import { refresh } from "next/cache";
-import { requireBusiness } from "@/lib/auth";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { BUSINESS_COOKIE, getAuthContext, requireBusiness } from "@/lib/auth";
 import { ingestKnowledgeItem } from "@/lib/knowledge/ingest";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { KnowledgeKind } from "@/lib/types";
@@ -16,6 +18,24 @@ export interface ActionState {
 const str = (form: FormData, key: string, max = 2000) =>
   String(form.get(key) ?? "").trim().slice(0, max);
 const optional = (form: FormData, key: string, max = 2000) => str(form, key, max) || null;
+
+// ---------------------------------------------------------------------------
+// Switching between the businesses this user belongs to
+// ---------------------------------------------------------------------------
+export async function switchBusiness(form: FormData): Promise<void> {
+  const id = str(form, "business_id", 64);
+  const ctx = await getAuthContext();
+  if (!ctx.user) redirect("/login");
+  if (ctx.businessIds.includes(id)) {
+    (await cookies()).set(BUSINESS_COOKIE, id, {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365,
+    });
+  }
+  redirect("/dashboard");
+}
 
 // ---------------------------------------------------------------------------
 // Business settings

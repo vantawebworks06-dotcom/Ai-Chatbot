@@ -11,9 +11,19 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 }
 
 async function Shell({ children }: { children: ReactNode }) {
-  const { business, user, isAgent } = await requireBusiness();
+  const { business, user, isAgent, supabase, businessIds } = await requireBusiness();
+  const { data: businesses } = await supabase
+    .from("businesses")
+    .select("id, name")
+    .in("id", businessIds)
+    .order("name");
   return (
-    <AppShell businessName={business.name} email={user.email ?? ""} isAgent={isAgent}>
+    <AppShell
+      business={{ id: business.id, name: business.name }}
+      businesses={(businesses ?? []) as { id: string; name: string }[]}
+      email={user.email ?? ""}
+      isAgent={isAgent}
+    >
       {children}
     </AppShell>
   );
