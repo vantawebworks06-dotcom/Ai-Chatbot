@@ -41,7 +41,11 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
       options: { emailRedirectTo: `${window.location.origin}/auth/confirm?next=/onboarding` },
     });
     if (error) {
-      setError(error.message);
+      setError(
+        error.code === "over_email_send_rate_limit"
+          ? "We couldn't send your confirmation email right now because too many emails were sent recently. Please try again in a little while."
+          : error.message,
+      );
       setLoading(false);
       return;
     }
